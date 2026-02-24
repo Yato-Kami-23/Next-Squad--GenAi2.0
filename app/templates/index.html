@@ -3,467 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CurricuForge — AI Curriculum Designer</title>
+  <title>Caripath — AI Curriculum Designer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --ink:      #0D1B2A;
-      --deep:     #0F2D5C;
-      --mid:      #1A56A0;
-      --accent:   #F0A500;
-      --accent2:  #E8F0FF;
-      --surface:  #F7F9FC;
-      --card:     #FFFFFF;
-      --border:   #DDE3EF;
-      --muted:    #6B7A99;
-      --success:  #1A9E6A;
-      --radius:   12px;
-      --shadow:   0 4px 24px rgba(15,45,92,.08);
-      --shadow-lg:0 12px 48px rgba(15,45,92,.14);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--surface);
-      color: var(--ink);
-      min-height: 100vh;
-    }
-
-    /* ── Topbar ─────────────────────────────────────────── */
-    .topbar {
-      background: var(--deep);
-      padding: 0 40px;
-      height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 16px rgba(0,0,0,.2);
-    }
-    .logo {
-      font-family: 'Fraunces', serif;
-      font-weight: 800;
-      font-size: 22px;
-      color: #fff;
-      letter-spacing: -.3px;
-    }
-    .logo span { color: var(--accent); }
-    .health-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      color: rgba(255,255,255,.6);
-      font-weight: 500;
-    }
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #aaa;
-      transition: background .3s;
-    }
-    .dot.gemini-on  { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
-    .dot.ollama-on  { background: #60a5fa; box-shadow: 0 0 6px #60a5fa; }
-    .dot.off        { background: #f87171; }
-
-    /* ── Hero ───────────────────────────────────────────── */
-    .hero {
-      background: linear-gradient(135deg, var(--deep) 0%, #1A3E7A 60%, #1A56A0 100%);
-      padding: 56px 40px 48px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-    .hero h1 {
-      font-family: 'Fraunces', serif;
-      font-size: clamp(28px, 4vw, 44px);
-      font-weight: 800;
-      color: #fff;
-      line-height: 1.15;
-      position: relative;
-    }
-    .hero h1 em {
-      font-style: italic;
-      font-weight: 300;
-      color: var(--accent);
-    }
-    .hero p {
-      margin-top: 12px;
-      color: rgba(255,255,255,.7);
-      font-size: 15px;
-      max-width: 520px;
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-    }
-
-    /* ── Layout ─────────────────────────────────────────── */
-    .layout {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 24px 60px;
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: 28px;
-      align-items: start;
-    }
-    @media (max-width: 860px) {
-      .layout { grid-template-columns: 1fr; }
-    }
-
-    /* ── Card ───────────────────────────────────────────── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px;
-      box-shadow: var(--shadow);
-    }
-    .card-title {
-      font-family: 'Fraunces', serif;
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--deep);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-title::after {
-      content: '';
-      flex: 1;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), transparent);
-    }
-
-    /* ── Form ───────────────────────────────────────────── */
-    .form-group { margin-bottom: 16px; }
-    label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      color: var(--ink);
-      background: var(--surface);
-      transition: border-color .2s, box-shadow .2s;
-      outline: none;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--mid);
-      box-shadow: 0 0 0 3px rgba(26,86,160,.1);
-      background: #fff;
-    }
-    textarea { resize: vertical; min-height: 70px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-    /* ── Buttons ────────────────────────────────────────── */
-    .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-    .btn {
-      flex: 1;
-      padding: 12px 18px;
-      border-radius: 9px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all .2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-    }
-    .btn-primary {
-      background: var(--deep);
-      color: #fff;
-    }
-    .btn-primary:hover { background: var(--mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15,45,92,.25); }
-    .btn-secondary {
-      background: var(--accent);
-      color: var(--ink);
-    }
-    .btn-secondary:hover { filter: brightness(1.05); transform: translateY(-1px); }
-    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
-
-    /* ── Loader ─────────────────────────────────────────── */
-    .loader {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      gap: 16px;
-    }
-    .loader.show { display: flex; }
-    .spinner {
-      width: 48px; height: 48px;
-      border: 4px solid var(--border);
-      border-top-color: var(--mid);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loader-text { color: var(--muted); font-size: 14px; font-weight: 500; }
-    .loader-step {
-      font-size: 12px;
-      color: var(--mid);
-      font-style: italic;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
-
-    /* ── Empty State ────────────────────────────────────── */
-    .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      text-align: center;
-      color: var(--muted);
-      gap: 12px;
-    }
-    .empty-icon { font-size: 48px; opacity: .3; }
-    .empty-state h3 { font-family: 'Fraunces', serif; color: var(--deep); font-size: 18px; }
-    .empty-state p { font-size: 13px; max-width: 300px; }
-
-    /* ── Result Panel ───────────────────────────────────── */
-    #result { display: none; }
-    #result.show { display: block; }
-
-    .provider-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 99px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .3px;
-      text-transform: uppercase;
-    }
-    .badge-gemini { background: #e8f5e9; color: #2e7d32; }
-    .badge-ollama { background: #e3f2fd; color: #1565c0; }
-
-    .desc-box {
-      background: var(--accent2);
-      border-left: 3px solid var(--mid);
-      border-radius: 0 8px 8px 0;
-      padding: 12px 16px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--ink);
-      margin-bottom: 16px;
-    }
-
-    /* Outcomes */
-    .outcomes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .outcome-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 12px 14px;
-      position: relative;
-    }
-    .outcome-card .lo-code {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--mid);
-      letter-spacing: .5px;
-      text-transform: uppercase;
-    }
-    .outcome-card .lo-desc {
-      font-size: 13px;
-      color: var(--ink);
-      margin: 4px 0;
-      line-height: 1.5;
-    }
-    .bloom-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 99px;
-      font-size: 10px;
-      font-weight: 600;
-      background: var(--accent);
-      color: var(--ink);
-    }
-
-    /* Modules */
-    .module-block {
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .module-header {
-      background: var(--deep);
-      color: #fff;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    .module-header h3 {
-      font-family: 'Fraunces', serif;
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .module-header .week-range {
-      font-size: 11px;
-      opacity: .7;
-    }
-    .module-body {
-      padding: 16px 18px;
-      display: none;
-    }
-    .module-body.open { display: block; }
-    .module-desc { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-
-    .topics-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .topics-table th {
-      text-align: left;
-      padding: 8px 10px;
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      border-bottom: 1.5px solid var(--border);
-    }
-    .topics-table td {
-      padding: 9px 10px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-      line-height: 1.5;
-    }
-    .topics-table tr:last-child td { border-bottom: none; }
-    .topics-table tr:hover td { background: var(--surface); }
-    .subtopics-list { list-style: none; }
-    .subtopics-list li::before { content: '↳ '; color: var(--mid); font-size: 11px; }
-
-    /* Recommendations */
-    .reco-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .reco-pill {
-      background: var(--deep);
-      color: #fff;
-      padding: 5px 14px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .skill-pill {
-      background: var(--accent2);
-      color: var(--mid);
-      padding: 5px 14px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 500;
-      border: 1px solid var(--border);
-    }
-
-    /* Section headers inside result */
-    .section-header {
-      font-family: 'Fraunces', serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--deep);
-      margin: 20px 0 10px;
-      padding-bottom: 6px;
-      border-bottom: 2px solid var(--accent);
-    }
-
-    /* Assessment */
-    .assessment-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 14px 16px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--ink);
-    }
-
-    /* Error */
-    .error-box {
-      background: #fff5f5;
-      border: 1px solid #fca5a5;
-      border-radius: 9px;
-      padding: 16px;
-      color: #dc2626;
-      font-size: 14px;
-      display: none;
-    }
-    .error-box.show { display: block; }
-
-    /* Chevron */
-    .chevron {
-      transition: transform .25s;
-      font-style: normal;
-    }
-    .chevron.open { transform: rotate(180deg); }
-  </style>
+  <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
 
-<!-- Topbar -->
+<!-- ── Topbar ─────────────────────────────────────────────── -->
 <nav class="topbar">
-  <div class="logo">Curricu<span>Forge</span></div>
+  <div class="logo">
+    <span class="logo-cari">Cari</span><span class="logo-dot"></span><span class="logo-path">path</span>
+  </div>
   <div class="health-badge">
-    <span class="dot" id="dot-gemini"></span> Gemini
-    &nbsp;|&nbsp;
-    <span class="dot" id="dot-ollama"></span> Ollama
+    <div class="health-item">
+      <span class="dot" id="dot-gemini"></span> Gemini
+    </div>
+    <div class="divider-v"></div>
+    <div class="health-item">
+      <span class="dot" id="dot-ollama"></span> Ollama
+    </div>
   </div>
 </nav>
 
-<!-- Hero -->
+<!-- ── Hero ───────────────────────────────────────────────── -->
 <section class="hero">
-  <h1>Design <em>Intelligent</em> Curricula<br/>in Seconds</h1>
-  <p>AI-powered course architecture, learning outcomes, topic mapping and PDF export — all in one place.</p>
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Generative AI · Curriculum Design</div>
+    <h1>Design <em>Intelligent</em> Curricula<br/>in Seconds</h1>
+    <p>AI-powered course architecture, learning outcomes, topic mapping and PDF export — all in one place.</p>
+  </div>
 </section>
 
-<!-- Main Layout -->
+<!-- ── Main Layout ─────────────────────────────────────────── -->
 <div class="layout">
 
   <!-- LEFT: Form -->
   <aside>
     <div class="card">
-      <div class="card-title">📋 Course Details</div>
+      <div class="card-title">
+        <div class="title-icon">📋</div>
+        Course Details
+      </div>
+
       <form id="curriculumForm">
 
         <div class="form-group">
@@ -542,9 +124,13 @@
 
   <!-- RIGHT: Result -->
   <main>
+
     <!-- Loader -->
     <div class="card loader" id="loader">
-      <div class="spinner"></div>
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="spinner-inner"></div>
+      </div>
       <div class="loader-text">Designing your curriculum…</div>
       <div class="loader-step" id="loaderStep">Connecting to AI engine</div>
     </div>
@@ -560,25 +146,26 @@
     <div id="result">
       <div class="card" id="resultContent"></div>
     </div>
+
   </main>
 </div>
 
 <script>
-  // ── Health Check ──────────────────────────────────────────────────────────
+  // ── Health Check ────────────────────────────────────────────────────────
   async function checkHealth() {
     try {
       const res = await fetch('/health');
       const data = await res.json();
       const dg = document.getElementById('dot-gemini');
       const do_ = document.getElementById('dot-ollama');
-      dg.className = 'dot ' + (data.ai_providers?.gemini === 'ok' ? 'gemini-on' : 'off');
-      do_.className = 'dot ' + (data.ai_providers?.ollama === 'ok' ? 'ollama-on' : 'off');
+      dg.className = 'dot ' + (data.ai_providers?.gemini === 'ok' ? 'on-green' : 'off');
+      do_.className = 'dot ' + (data.ai_providers?.ollama === 'ok' ? 'on-peach' : 'off');
     } catch(e) {}
   }
   checkHealth();
   setInterval(checkHealth, 15000);
 
-  // ── Loader steps animation ────────────────────────────────────────────────
+  // ── Loader Steps ────────────────────────────────────────────────────────
   const steps = [
     "Connecting to AI engine…",
     "Analyzing course requirements…",
@@ -589,6 +176,7 @@
     "Finalizing curriculum…",
   ];
   let stepIdx = 0, stepInterval;
+
   function startSteps() {
     stepIdx = 0;
     document.getElementById('loaderStep').textContent = steps[0];
@@ -597,27 +185,26 @@
       document.getElementById('loaderStep').textContent = steps[stepIdx];
     }, 2200);
   }
+
   function stopSteps() { clearInterval(stepInterval); }
 
-  // ── State ─────────────────────────────────────────────────────────────────
+  // ── State ───────────────────────────────────────────────────────────────
   let lastFormData = null;
 
-  // ── Form Submit ───────────────────────────────────────────────────────────
+  // ── Form Submit ─────────────────────────────────────────────────────────
   document.getElementById('curriculumForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
+    const fd = new FormData(e.target);
     const body = {
-      course_title:        fd.get('course_title'),
-      subject_area:        fd.get('subject_area'),
-      education_level:     fd.get('education_level'),
-      duration_weeks:      parseInt(fd.get('duration_weeks')),
-      target_audience:     fd.get('target_audience'),
-      industry_focus:      fd.get('industry_focus') || '',
-      special_requirements:fd.get('special_requirements') || '',
+      course_title:         fd.get('course_title'),
+      subject_area:         fd.get('subject_area'),
+      education_level:      fd.get('education_level'),
+      duration_weeks:       parseInt(fd.get('duration_weeks')),
+      target_audience:      fd.get('target_audience'),
+      industry_focus:       fd.get('industry_focus') || '',
+      special_requirements: fd.get('special_requirements') || '',
     };
 
-    // UI state
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('result').classList.remove('show');
     document.getElementById('loader').classList.add('show');
@@ -629,7 +216,7 @@
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
@@ -642,6 +229,7 @@
       lastFormData = body;
       renderResult(data);
       document.getElementById('downloadBtn').disabled = false;
+
     } catch(err) {
       const eb = document.getElementById('errorBox');
       eb.textContent = '⚠ ' + err.message;
@@ -654,7 +242,7 @@
     }
   });
 
-  // ── Download PDF ──────────────────────────────────────────────────────────
+  // ── Download PDF ────────────────────────────────────────────────────────
   document.getElementById('downloadBtn').addEventListener('click', async () => {
     if (!lastFormData) return;
     const btn = document.getElementById('downloadBtn');
@@ -663,7 +251,7 @@
     try {
       const res = await fetch('/api/download-pdf', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(lastFormData),
       });
       if (!res.ok) throw new Error('PDF generation failed.');
@@ -671,7 +259,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = lastFormData.course_title.replace(/\s+/g,'_') + '_Curriculum.pdf';
+      a.download = lastFormData.course_title.replace(/\s+/g, '_') + '_Curriculum.pdf';
       a.click();
       URL.revokeObjectURL(url);
     } catch(err) {
@@ -682,20 +270,19 @@
     }
   });
 
-  // ── Render Result ─────────────────────────────────────────────────────────
+  // ── Render Result ───────────────────────────────────────────────────────
   function renderResult(d) {
     const providerClass = d.provider === 'gemini' ? 'badge-gemini' : 'badge-ollama';
-    const providerLabel = d.provider === 'gemini' ? '✦ Gemini' : '⬡ Ollama';
+    const providerLabel = d.provider === 'gemini' ? '✦ Gemini 2.5' : '⬡ Ollama';
 
     let html = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div class="result-meta">
         <div>
-          <div class="card-title" style="margin-bottom:4px">🎓 ${d.course_title}</div>
-          <div style="font-size:12px;color:var(--muted)">${d.education_level} · ${d.duration_weeks} Weeks · ${d.subject_area}</div>
+          <div class="result-title">🎓 ${d.course_title}</div>
+          <div class="result-subtitle">${d.education_level} &nbsp;·&nbsp; ${d.duration_weeks} Weeks &nbsp;·&nbsp; ${d.subject_area}</div>
         </div>
         <span class="provider-badge ${providerClass}">${providerLabel}</span>
       </div>
-
       <div class="desc-box">${d.course_description}</div>
 
       <div class="section-header">📌 Learning Outcomes</div>
@@ -710,13 +297,14 @@
           <span class="bloom-tag">${lo.bloom_level}</span>
         </div>`;
     });
-    html += `</div>`;
 
-    // Modules
-    html += `<div class="section-header">📚 Curriculum Modules</div>`;
+    html += `</div><div class="section-header">📚 Curriculum Modules</div>`;
+
     (d.modules || []).forEach((mod, i) => {
       const wks = mod.weeks || [];
-      const wRange = wks.length ? `Weeks ${wks[0]}–${wks[wks.length-1]}` : '';
+      const wRange = wks.length ? `Weeks ${wks[0]}–${wks[wks.length - 1]}` : '';
+      const loRefs = (mod.learning_outcomes || []).map(l => `<span class="lo-ref-tag">${l}</span>`).join('');
+
       html += `
         <div class="module-block">
           <div class="module-header" onclick="toggleModule(this)">
@@ -728,9 +316,10 @@
           </div>
           <div class="module-body ${i === 0 ? 'open' : ''}">
             <p class="module-desc">${mod.description}</p>
+            ${loRefs ? `<div class="lo-refs">${loRefs}</div>` : ''}
             <table class="topics-table">
               <thead>
-                <tr><th>Week</th><th>Topic</th><th>Subtopics</th><th>Assessment</th></tr>
+                <tr><th>Wk</th><th>Topic</th><th>Subtopics</th><th>Assessment</th></tr>
               </thead>
               <tbody>`;
 
@@ -738,34 +327,27 @@
         const subs = (t.subtopics || []).map(s => `<li>${s}</li>`).join('');
         html += `
           <tr>
-            <td><strong>${t.week}</strong></td>
+            <td><span class="week-num">${t.week}</span></td>
             <td><strong>${t.title}</strong></td>
             <td><ul class="subtopics-list">${subs}</ul></td>
-            <td>${t.assessment_type || '—'}</td>
+            <td><span class="assessment-chip">${t.assessment_type || '—'}</span></td>
           </tr>`;
       });
 
       html += `</tbody></table></div></div>`;
     });
 
-    // Recommended topics
-    html += `<div class="section-header">💡 Recommended Additional Topics</div>
-      <div class="reco-grid">`;
-    (d.recommended_topics || []).forEach(t => {
-      html += `<span class="reco-pill">${t}</span>`;
-    });
-    html += `</div>`;
-
-    // Industry alignment
-    html += `<div class="section-header">🏭 Industry Alignment</div>
-      <div class="reco-grid">`;
-    (d.industry_alignment || []).forEach(s => {
-      html += `<span class="skill-pill">${s}</span>`;
-    });
-    html += `</div>`;
-
-    // Assessment strategy
     html += `
+      <div class="section-header">💡 Recommended Additional Topics</div>
+      <div class="reco-grid">
+        ${(d.recommended_topics || []).map(t => `<span class="reco-pill">${t}</span>`).join('')}
+      </div>
+
+      <div class="section-header">🏭 Industry Alignment</div>
+      <div class="reco-grid">
+        ${(d.industry_alignment || []).map(s => `<span class="skill-pill">${s}</span>`).join('')}
+      </div>
+
       <div class="section-header">📝 Assessment Strategy</div>
       <div class="assessment-box">${d.assessment_strategy}</div>
     `;
