@@ -1,4 +1,4 @@
-# CurricuForge 🎓
+# CariPath 🎓
 **Generative AI–Powered Curriculum Design System**
 
 ---
